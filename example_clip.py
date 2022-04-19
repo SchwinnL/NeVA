@@ -2,6 +2,7 @@ import torch
 from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
 import robustbench as rb
+import clip
 
 from NeVA import NeVAWrapper
 
@@ -14,21 +15,28 @@ lr = 0.1
 optimization_steps = 20
 
 scanpath_length = 10
-foveation_sigma = 0.2
-blur_filter_size = 41
+foveation_sigma = 0.15
+blur_filter_size = 5
 forgetting = 0.1
-blur_sigma = 10
-criterion = torch.nn.CrossEntropyLoss(reduction="none")
+blur_sigma = 5
+
+def cosine_sim(x, y):
+    val = torch.nn.functional.cosine_similarity(x, y, 1)
+    return -val + 1
+
+criterion = cosine_sim
+
 def target_function(x, y):
     return y
 
-# Load Dataset
-transform = transforms.Compose([transforms.ToTensor()])
-test = datasets.CIFAR10(data_path + "CIFAR10-data", train=False, download=True, transform=transform)
-test_loader = DataLoader(test, batch_size=batch_size, shuffle=False, pin_memory=True)
-
 # Load Model
-model = rb.utils.load_model(model_name="Standard", dataset="cifar10", model_dir=model_path).cuda()
+model, preprocess = clip.load('RN50', 'cuda', download_root=model_path)
+model = model.visual
+
+# Load Dataset
+transform = transforms.Compose(preprocess)
+test = datasets.CIFAR10(data_path + "CIFAR10-data", train=False, download=True, transform=preprocess)
+test_loader = DataLoader(test, batch_size=batch_size, shuffle=False, pin_memory=True)
 
 # Create NeVA Model
 NeVA_model = NeVAWrapper(downstream_model=model,
@@ -48,9 +56,8 @@ loss_history = []
 for i, data in enumerate(test_loader):
     images, _ = data
     images = images.cuda()
-
     output = model(images)
-    pred_labels = output.argmax(1)
+    pred_labels = output
 
     current_scanpaths, current_loss_history = NeVA_model.run_optimization(images, pred_labels, scanpath_length, optimization_steps, lr)
     scanpaths.extend(current_scanpaths)

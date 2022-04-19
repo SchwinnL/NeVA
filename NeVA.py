@@ -54,7 +54,7 @@ class NeVAWrapper(nn.Module):
         for step in range(scanpath_length):
             foveation_pos = torch.zeros((batch_size, 2, 1, 1), device='cuda', requires_grad=True)
             best_foveation_pos = torch.zeros((batch_size, 2, 1, 1), device='cuda')  # * 2 - 1
-            best_loss = torch.ones((batch_size), device='cuda') * float("inf")
+            best_loss = torch.ones((batch_size), device='cuda', dtype=torch.float16) * float("inf")
 
             for _ in range(opt_iterations):
                 output = self(x, foveation_pos)
@@ -62,10 +62,9 @@ class NeVAWrapper(nn.Module):
                 loss = self.criterion(output, targets)
                 total_loss = loss.mean()
                 # backward pass: compute gradient of the loss with respect to model parameters
-                total_loss.backward()
+                grad = torch.autograd.grad(total_loss, foveation_pos)[0]
                 # perform a single optimization step (parameter update)
-                foveation_pos.data -= torch.sign(foveation_pos.grad) * learning_rate
-                foveation_pos.grad.zero_()
+                foveation_pos.data -= torch.sign(grad) * learning_rate
                 # save best
                 idxs = loss < best_loss
                 best_loss[idxs] = loss[idxs]
