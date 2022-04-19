@@ -18,7 +18,6 @@ def get_data_set(conf, train, dataset=None, resize=False):
     if not train and conf.test_dataset is not None:
         dataset = conf.test_dataset
     batch_size = conf.batch_size if conf.test_batch_size is None else conf.test_batch_size
-    train, valid, test, loader = [None] * 4
 
     if dataset == DataSetName.cifar10:
         train, test = get_cifar10(conf)
