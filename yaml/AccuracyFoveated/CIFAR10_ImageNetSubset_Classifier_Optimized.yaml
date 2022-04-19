@@ -1,0 +1,25 @@
+accuracy: [1]
+plot: [1]
+load: [1]
+adversarial: [1, 0]
+optimization: [1]
+
+scan_path_model: [Empty]
+downstream_model: [Standard]
+downstream_model_test: [ImageNetDeepAugmentAndAugmix]
+downstream_model_type: [Classifier]
+
+dataset: [cifar10]
+test_dataset: [imagenetSubset]
+batch_size: [32]
+lr: [0.1]
+epochs: [20]
+
+deblur_steps: [10]
+foveation_size: [0.15]
+noise_factor: [0]
+filter_size: [41]
+blur_sigma: [35]
+forgetting: [1]
+
+seed: [0]

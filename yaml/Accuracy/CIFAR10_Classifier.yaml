@@ -1,0 +1,15 @@
+load: [1]
+standard_accuracy: [1]
+
+scan_path_model: [ResNet2810]
+downstream_model: [Standard]
+downstream_model_type: [Classifier]
+
+dataset: [cifar10]
+batch_size: [256]
+
+foveation_size: [0.15]
+noise_factor: [0]
+filter_size: [5]
+
+seed: [0]

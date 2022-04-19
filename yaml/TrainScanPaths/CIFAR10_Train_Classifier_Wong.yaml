@@ -1,0 +1,25 @@
+train: [0]
+test: [1]
+trained_scanpath_model: [0]
+plot: [0]
+load: [1]
+
+scan_path_model: [ResNet2810]
+downstream_model: [Wong2020Fast]
+downstream_model_type: [Classifier]
+
+dataset: [cifar10]
+test_dataset: [mit1003]
+batch_size: [256]
+lr: [0.0001]
+epochs: [200]
+test_batch_size: [250]
+forgetting_test: [[0.7]]
+
+deblur_steps: [10]
+foveation_size: [0.15]
+noise_factor: [0]
+filter_size: [5]
+forgetting: [1]
+
+seed: [0]

@@ -1,0 +1,30 @@
+plot: [1]
+plot_type: [plot_scanpath_diversity]
+scan_path_experiments: [{'cifar10_CLASS_PRETRAIN_1_tf1':"NeVA-C",
+                         'cifar10_REC_PRETRAIN_1_tf1':'NeVA-R',
+                        #'cifar10_CLASS_PRETRAIN_OPT_1':'NeVA-O-C',
+                        #'cifar10_REC_PRETRAIN_OPT_1':'NeVA-O-R',
+                        }]
+
+scan_path_model: [Empty]
+downstream_model: [Standard]
+downstream_model_type: [Classifier]
+
+dataset: [cifar10]
+test_dataset: [[mit1003, kootstra, toronto]]
+batch_size: [100]
+lr: [0.1]
+epochs: [20]
+resize: [256]
+crop: [224]
+
+
+forgetting_test: [0.7]
+deblur_steps: [10]
+foveation_size: [0.15]
+noise_factor: [0]
+filter_size: [41]
+forgetting: [1]
+blur_sigma: [35]
+
+seed: [0]

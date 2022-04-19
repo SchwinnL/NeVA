@@ -1,0 +1,23 @@
+test: [1]
+trained_scanpath_model: [1]
+load: [1]
+
+scan_path_model: [ResNet2810]
+downstream_model: [ImageNetDeepAugmentAndAugmix]
+downstream_model_test: [ImageNetDeepAugmentAndAugmix]
+downstream_model_type: [Classifier]
+
+dataset: [cifar10]
+test_dataset: [imagenetSubset]
+batch_size: [256]
+test_batch_size: [100]
+lr: [0.0001]
+epochs: [200]
+
+deblur_steps: [10]
+foveation_size: [0.15]
+noise_factor: [0]
+filter_size: [41]
+blur_sigma: [35]
+
+seed: [0]

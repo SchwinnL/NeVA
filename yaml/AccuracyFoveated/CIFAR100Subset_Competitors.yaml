@@ -1,0 +1,14 @@
+accuracy: [1]
+
+downstream_model_test: [CIFAR100_ResNet32]
+
+dataset: [cifar100Subset]
+test_dataset: [cifar100Subset]
+batch_size: [256]
+method_name: [random, Center, CLE, Geymol, WTA]
+
+foveation_size: [0.15]
+noise_factor: [0]
+filter_size: [5]
+
+seed: [0]

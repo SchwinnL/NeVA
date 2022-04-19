@@ -1,0 +1,16 @@
+accuracy: [1]
+
+downstream_model_test: [ImageNetDeepAugmentAndAugmix]
+
+dataset: [imagenetSubset]
+test_dataset: [imagenetSubset]
+batch_size: [100]
+method_name: [CLE, Geymol, WTA, random, Center]
+
+deblur_steps: [10]
+foveation_size: [0.15]
+noise_factor: [0]
+filter_size: [41]
+blur_sigma: [35]
+
+seed: [0]

@@ -1,0 +1,24 @@
+train: [0]
+test: [1]
+trained_scanpath_model: [1]
+plot: [0]
+load: [1]
+
+scan_path_model: [ResNet2810]
+downstream_model: [DenoisingAutoencoder]
+downstream_model_type: [Reconstructer]
+
+dataset: [imagenet]
+test_dataset: [mit1003]
+batch_size: [64]
+lr: [0.0001]
+epochs: [2]
+forgetting_test: [[0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]]
+
+deblur_steps: [8]
+foveation_size: [0.15]
+noise_factor: [0.15]
+forgetting: [0.8]
+filter_size: [41]
+
+seed: [0]

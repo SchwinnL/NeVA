@@ -1,0 +1,26 @@
+train: [0]
+pretrained: [1]
+test: [0]
+plot: [1]
+load: [1]
+optimize_foveation_pos: [0]
+opt_sequence: [1]
+
+scan_path_model: [Empty]
+downstream_model: [DenoisingAutoencoder]
+downstream_model_type: [Reconstructer]
+
+dataset: [cifar10]
+test_dataset: [mit1003]
+batch_size: [256]
+lr: [0.1]
+epochs: [10]
+
+deblur_steps: [10]
+foveation_size: [0.15]
+noise_factor: [0.1]
+filter_size: [5]
+forgetting: [0.9]
+blur_sigma: [5]
+
+seed: [0]
