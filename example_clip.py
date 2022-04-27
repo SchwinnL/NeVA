@@ -1,7 +1,6 @@
 import torch
 from torchvision import datasets, transforms
 from torch.utils.data import DataLoader
-import robustbench as rb
 import clip
 
 from NeVA import NeVAWrapper
@@ -14,11 +13,11 @@ image_size = 224
 lr = 0.1
 optimization_steps = 20
 
-scanpath_length = 10
-foveation_sigma = 0.15
-blur_filter_size = 5
-forgetting = 0.1
-blur_sigma = 5
+scanpath_length = 3
+foveation_sigma = 0.2
+blur_filter_size = 41
+forgetting = 0.7
+blur_sigma = 10
 
 def cosine_sim(x, y):
     val = torch.nn.functional.cosine_similarity(x, y, 1)
@@ -31,15 +30,14 @@ def target_function(x, y):
 
 # Load Model
 model, preprocess = clip.load('RN50', 'cuda', download_root=model_path)
-model = model.visual
-
+vision_model = model.visual
 # Load Dataset
 transform = transforms.Compose(preprocess)
 test = datasets.CIFAR10(data_path + "CIFAR10-data", train=False, download=True, transform=preprocess)
 test_loader = DataLoader(test, batch_size=batch_size, shuffle=False, pin_memory=True)
 
 # Create NeVA Model
-NeVA_model = NeVAWrapper(downstream_model=model,
+NeVA_model = NeVAWrapper(downstream_model=vision_model,
                     criterion=criterion,
                     target_function=target_function,
                     image_size=image_size,
@@ -56,7 +54,9 @@ loss_history = []
 for i, data in enumerate(test_loader):
     images, _ = data
     images = images.cuda()
-    output = model(images)
+    text = clip.tokenize(["a white car behind of a green car"]).to("cuda")
+    # Use caption as guidance for NeVA could alternatively also use the image -> output = vision_model(images)
+    output = model.encode_text(text)
     pred_labels = output
 
     current_scanpaths, current_loss_history = NeVA_model.run_optimization(images, pred_labels, scanpath_length, optimization_steps, lr)

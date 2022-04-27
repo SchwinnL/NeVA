@@ -14,10 +14,10 @@ lr = 0.1
 optimization_steps = 20
 
 scanpath_length = 10
-foveation_sigma = 0.2
-blur_filter_size = 41
+foveation_sigma = 0.15
+blur_filter_size = 5
 forgetting = 0.1
-blur_sigma = 10
+blur_sigma = 5
 criterion = torch.nn.CrossEntropyLoss(reduction="none")
 def target_function(x, y):
     return y

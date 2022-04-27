@@ -4,9 +4,10 @@ from torch.autograd import Variable
 import torch.nn.functional as F
 import torch.nn as nn
 import numpy as np
+from plot import plot_foveation
 
 class NeVAWrapper(nn.Module):
-    def __init__(self, downstream_model, criterion, target_function, image_size, foveation_sigma, blur_filter_size, blur_sigma, forgetting, foveation_aggregation=1, device="cuda", data_min=0, data_max=1):
+    def __init__(self, downstream_model, criterion, target_function, image_size, foveation_sigma, blur_filter_size, blur_sigma, forgetting, foveation_aggregation=1, device="cuda"):
         super(NeVAWrapper, self).__init__()
 
         self.image_size = image_size
@@ -19,8 +20,6 @@ class NeVAWrapper(nn.Module):
         self.internal_representation = None
         self.ones = None
         self.device = device
-        self.data_min = data_min
-        self.data_max = data_max
 
         self.downstream_model = downstream_model
         self.criterion = criterion
@@ -31,7 +30,7 @@ class NeVAWrapper(nn.Module):
             raise Exception("First set internal representation with function: initialize_scanpath_generation()")
         foveation_area = get_foveation(self.foveation_aggregation, self.foveation_sigma, self.image_size, foveation_positions)
         current_foveation_area = self.internal_representation + foveation_area
-        blurring_mask = torch.clip(self.ones - current_foveation_area, self.data_min, self.data_max)
+        blurring_mask = torch.clip(self.ones - current_foveation_area, 0, 1)
         applied_blur = self.blur * blurring_mask
 
         output = self.downstream_model(x + applied_blur)
@@ -70,17 +69,18 @@ class NeVAWrapper(nn.Module):
                 best_loss[idxs] = loss[idxs]
                 best_foveation_pos[idxs] = foveation_pos[idxs]
                 if torch.sum(~idxs) > 0:
-                    #Jitter positions that are worse than before
-                    foveation_pos.data[~idxs] += torch.rand_like(best_foveation_pos.data[~idxs]) * learning_rate - learning_rate / 2
+                    #randomize positions that are worse than in previous optimization step
+                    foveation_pos.data[~idxs] = torch.rand_like(best_foveation_pos.data[~idxs]) * 2 - 1
 
             # Update internal representation
             current_foveation_mask = get_foveation(self.foveation_aggregation, self.foveation_sigma, self.image_size, best_foveation_pos)
             self.internal_representation = (self.internal_representation * self.forgetting + current_foveation_mask).detach()
+            blur_mask = self.ones - self.internal_representation
             # Save positions in array
-            scanpath.append(best_foveation_pos.detach().cpu().numpy())
+            scanpath.append(best_foveation_pos.detach())
             # Loss history
-            loss_history.append(list(loss.detach().cpu().numpy()))
-        return np.stack(scanpath, 1).squeeze(), np.stack(loss_history, 1).squeeze()
+            loss_history.append(loss.detach())
+        return torch.stack(scanpath, 1).squeeze(), torch.stack(loss_history, 1).squeeze()
 
 def calc_gaussian(a, std_dev, image_size, positions):
     B = positions.shape[0]
@@ -111,10 +111,8 @@ def calculate_blur(images, blur_filter_size, sigma=5):
 
     window = create_window(blur_filter_size, 3, sigma).cuda()
     pad = nn.ReflectionPad2d(padding=blur_filter_size // 2)
-    noisy_imgs_pad = pad(images)
-    blured_images = F.conv2d(noisy_imgs_pad, window, groups=3)
-    # Clip the images to be between 0 and 1
-    blured_images = torch.clip(blured_images, 0., 1.)
+    imgs_pad = pad(images)
+    blured_images = F.conv2d(imgs_pad, window, groups=3)
     blur = blured_images - images
     return blur
 
