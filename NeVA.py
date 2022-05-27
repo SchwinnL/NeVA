@@ -42,7 +42,7 @@ class NeVAWrapper(nn.Module):
         self.ones = torch.ones((batch_size, 1, self.image_size, self.image_size), device=self.device)
         self.blur = calculate_blur(x, self.blur_filter_size, self.blur_sigma)
 
-    def run_optimization(self, x, labels, scanpath_length, opt_iterations, learning_rate):
+    def run_optimization(self, x, labels, scanpath_length, opt_iterations, learning_rate, random_restarts=False):
         batch_size = x.size(0)
         targets = self.target_function(x, labels)
         self.initialize_scanpath_generation(x, batch_size)
@@ -70,8 +70,10 @@ class NeVAWrapper(nn.Module):
                 best_foveation_pos[idxs] = foveation_pos[idxs]
                 if torch.sum(~idxs) > 0:
                     #randomize positions that are worse than in previous optimization step
-                    foveation_pos.data[~idxs] = torch.rand_like(best_foveation_pos.data[~idxs]) * 2 - 1
-
+                    if random_restarts:
+                        foveation_pos.data[~idxs] = torch.rand_like(best_foveation_pos.data[~idxs]) * 2 - 1
+                    else:
+                        foveation_pos.data[~idxs] += torch.rand_like(best_foveation_pos.data[~idxs]) * learning_rate - learning_rate / 2
             # Update internal representation
             current_foveation_mask = get_foveation(self.foveation_aggregation, self.foveation_sigma, self.image_size, best_foveation_pos)
             self.internal_representation = (self.internal_representation * self.forgetting + current_foveation_mask).detach()
